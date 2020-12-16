@@ -17,6 +17,7 @@
         color="grey-10"
         icon="eva-camera"
         round
+        :disable="imageCaptured"
       />
       <q-file
         v-else
@@ -33,7 +34,7 @@
       <div class="row justify-center q-ma-md">
         <q-input
           class="col-12 col-sm-6"
-          label="Caption"
+          label="Caption *"
           dense
           v-model="post.caption"
         />
@@ -59,56 +60,93 @@
         </q-input>
       </div>
       <div class="row justify-center q-mt-lg">
-        <q-btn unelevated rounded label="Post Image" color="primary" />
+        <q-btn
+          unelevated
+          rounded
+          label="Post Image"
+          color="primary"
+          :disable="!post.caption || post.photo"
+          @click="addPost"
+        />
       </div>
     </div>
   </q-page>
 </template>
 
 <script>
-import { uid } from "quasar";
+import { uid } from 'quasar';
 
 export default {
-  name: "PageCamera",
+  name: 'PageCamera',
   data: () => ({
     post: {
       id: uid(),
-      caption: "",
-      location: "",
+      caption: '',
+      location: '',
       photo: null,
-      date: Date.now()
+      date: Date.now(),
     },
     imageCaptured: false,
     hasCameraSupport: true,
     imageUpload: [],
-    locaitonLoading: false
+    locaitonLoading: false,
   }),
   computed: {
     locationSupported() {
-      if ("geolocation" in navigator) return true;
+      if ('geolocation' in navigator) return true;
       return false;
-    }
+    },
   },
   methods: {
+    addPost() {
+      this.$q.loading.show();
+
+      let formData = new FormData();
+      formData.append('id', this.post.id);
+      formData.append('caption', this.post.caption);
+      formData.append('location', this.post.location);
+      formData.append('file', this.post.photo, this.post.id + '.png');
+      formData.append('date', this.post.date);
+
+      this.$axios
+        .post(`${process.env.API}/posts`, formData)
+        .then((res) => {
+          console.log(res.data);
+          this.$router.push('/');
+          this.$q.notify({
+            message: 'Post created!',
+            actions: [{ label: 'Close', color: 'white' }],
+          });
+        })
+        .catch((e) => {
+          this.$q.dialog({
+            title: 'Error',
+            message: 'Sorry could not create post',
+          });
+        })
+        .finally(() => {
+          this.$q.loading.hide();
+        });
+    },
     initCamera() {
       navigator.mediaDevices
         .getUserMedia({
-          video: true
+          video: true,
         })
-        .then(stream => {
+        .then((stream) => {
           this.$refs.video.srcObject = stream;
         })
-        .catch(e => {
+        .catch((e) => {
           this.hasCameraSupport = false;
         });
     },
     captureImage() {
-      console.log("Click");
+      console.log('Click');
       const video = this.$refs.video;
       const canvas = this.$refs.canvas;
       canvas.width = video.getBoundingClientRect().width;
       canvas.height = video.getBoundingClientRect().height;
-      const context = canvas.getContext("2d");
+      const context = canvas.getContext('2d');
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       this.imageCaptured = true;
@@ -119,10 +157,10 @@ export default {
       this.post.photo = file;
 
       const canvas = this.$refs.canvas;
-      const context = canvas.getContext("2d");
+      const context = canvas.getContext('2d');
 
       var reader = new FileReader();
-      reader.onload = event => {
+      reader.onload = (event) => {
         var img = new Image();
         img.onload = () => {
           canvas.width = img.width;
@@ -135,20 +173,20 @@ export default {
       reader.readAsDataURL(file);
     },
     disableCamera() {
-      this.$refs.video.srcObject.getVideoTracks().forEach(track => {
+      this.$refs.video.srcObject.getVideoTracks().forEach((track) => {
         track.stop();
       });
     },
     dataURItoBlob(dataURI) {
       // convert base64 to raw binary data held in a string
       // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
-      var byteString = atob(dataURI.split(",")[1]);
+      var byteString = atob(dataURI.split(',')[1]);
 
       // separate out the mime component
       var mimeString = dataURI
-        .split(",")[0]
-        .split(":")[1]
-        .split(";")[0];
+        .split(',')[0]
+        .split(':')[1]
+        .split(';')[0];
 
       // write the bytes of the string to an ArrayBuffer
       var ab = new ArrayBuffer(byteString.length);
@@ -168,14 +206,14 @@ export default {
     getLocation() {
       this.locaitonLoading = true;
       navigator.geolocation.getCurrentPosition(
-        position => {
+        (position) => {
           this.getCityAndCountry(position);
         },
-        err => {
+        (err) => {
           this.locationError();
         },
         {
-          timeout: 7000
+          timeout: 7000,
         }
       );
     },
@@ -183,10 +221,10 @@ export default {
       let apiUrl = `https://geocode.xyz/${position.coords.latitude},${position.coords.longitude}?json=1`;
       this.$axios
         .get(apiUrl)
-        .then(res => {
+        .then((res) => {
           this.locationSuccess(res);
         })
-        .catch(e => this.locationError());
+        .catch((e) => this.locationError());
     },
     locationSuccess(res) {
       this.post.location = res.data.city;
@@ -198,12 +236,12 @@ export default {
     },
     locationError() {
       this.$q.dialog({
-        title: "Error",
-        message: "Could not find your location"
+        title: 'Error',
+        message: 'Could not find your location',
       });
 
       this.locaitonLoading = false;
-    }
+    },
   },
   mounted() {
     this.initCamera();
@@ -212,7 +250,7 @@ export default {
     if (this.hasCameraSupport) {
       this.disableCamera();
     }
-  }
+  },
 };
 </script>
 

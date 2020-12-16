@@ -30,7 +30,6 @@
             <q-separator />
             <q-img :src="post.imageUrl" />
             <q-card-section>
-              <div>Our Changing Planet</div>
               <div class="text-caption text-grey">
                 {{ post.date | niceDate }}
               </div>
@@ -104,14 +103,14 @@ export default {
     getPosts() {
       this.loadingPosts = true;
       this.$axios
-        .get('http://localhost:5000/posts')
+        .get(`${process.env.API}/posts`)
         .then((res) => {
           this.posts = res.data;
         })
         .catch((e) => {
           this.$q.dialog({
             title: 'Error',
-            message: 'Could not download your posts',
+            message: 'Could not download posts.',
           });
         })
         .finally(() => {
