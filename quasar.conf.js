@@ -42,7 +42,7 @@ module.exports = function(/* ctx */) {
       env: {
         API: 'http://localhost:5000',
       },
-      vueRouterMode: 'history', // available values: 'hash', 'history'
+      vueRouterMode: 'hash', // available values: 'hash', 'history'
 
       // transpile: false,
 
@@ -97,12 +97,12 @@ module.exports = function(/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Dialog', 'Notify', 'Loading'],
+      plugins: ['Dialog', 'Notify', 'Loading', 'LocalStorage'],
     },
 
     // animations: 'all', // --- includes all animations
     // https://quasar.dev/options/animations
-    animations: [],
+    animations: ['fadeIn', 'fadeOut'],
 
     // https://quasar.dev/quasar-cli/developing-ssr/configuring-ssr
     ssr: {
@@ -114,13 +114,13 @@ module.exports = function(/* ctx */) {
       workboxPluginMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       workboxOptions: {}, // only for GenerateSW
       manifest: {
-        name: 'Quasar App',
-        short_name: 'Quasar App',
-        description: 'A Quasar Framework app',
+        name: 'Quasargram',
+        short_name: 'Quasargram',
+        description: 'A Simple Instagram Clone - Made With Quasar',
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#ffffff',
-        theme_color: '#027be3',
+        theme_color: '#212121',
         icons: [
           {
             src: 'icons/icon-128x128.png',
